@@ -1,0 +1,14 @@
+{application, distance_mng,
+ [{description, "Distance manager"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { distance_mng_app, []}},
+  {modules, []},
+  {applications,
+   [
+   	epgsql,
+   	 cowboy,
+	jsx
+   ]},
+  {env,[]}
+ ]}.
