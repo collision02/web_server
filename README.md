@@ -1,4 +1,4 @@
-uniq_int_gen
+distance_mng
 =====
 
 An OTP application
