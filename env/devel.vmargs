@@ -1,9 +1,0 @@
--boot start_sasl
-
-## Name of the node
--sname uniq_int
-
-## Cookie for distributed erlang -
--setcookie pt_develcookie
-# -s uniq_int_gen
-# -s reloader
