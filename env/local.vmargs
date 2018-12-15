@@ -1,0 +1,10 @@
+-boot start_sasl
+
+## Name of the node
+-sname distance_mng
+
+## Cookie for distributed erlang -
+#
+-setcookie pt_develcookie
+-s distance_mng
+-s sync
