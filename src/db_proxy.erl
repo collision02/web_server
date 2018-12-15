@@ -18,12 +18,13 @@
 %% API exports
 -export([
     db_error/1,
-    get_connection/1,
+    get_connection/0,
     ok/1,
     ok/2,
-    return_connection/2,
+    close_connection/1,
     query/2,
     query/3,
+	query/4,
     tx/2
 ]).
 
@@ -40,8 +41,9 @@
 db_error(ErrInfo) ->
     erlang:throw(erlang:append_element({error, db_error}, ErrInfo)).
 
-get_connection(DB) ->
-    episcina:get_connection(DB).
+
+close_connection(C) ->
+    epgsql:close(C).
 
 -spec ok(Res) -> dbproxy_result() when
          Res    ::  {ok, dbproxy_unwrapped_query_result()}
@@ -70,9 +72,11 @@ ok(#{status := ok}, ok) ->
 ok(Res, _) ->
     db_error(Res).
 
-
-return_connection(DB, C) ->
-    episcina:return_connection(DB, C).
+-spec get_connection() -> {ok, C:: epgsql:connection()} | {error, Reason::term()}.
+get_connection() ->
+	DB = appication:get_env(dbproxy, distance_mng),
+	[Opts] = proplist:get_value(databases, DB),
+    epgsql:connect(Opts).
 
 -spec query(atom(), epgsql:sql_query()) ->
     {epgsql:connection(), dbproxy_unwrapped_query_result()} | dbproxy_unwrapped_query_result().
@@ -83,13 +87,13 @@ query(DB, Query) when is_atom(DB) ->
     {epgsql:connection(), dbproxy_unwrapped_query_result()} | dbproxy_unwrapped_query_result()
     when PoolNameOrTransactionHandler :: atom() | epgsql:connection().
 query(DB, Query, Params) when is_atom(DB) ->
-    {ok, C} = get_connection(DB),
-    {C, Res} = query(C, Query, Params),
-    return_connection(DB, C),
-    Res;
-query(C, Query, Params) ->
+    {ok, C} = get_connection(),
+    {C, Res} = query(C, DB, Query, Params),
+    close_connection(C),
+    Res.
+query(C, DB, Query, Params) ->
 %   logger:debug("[dbproxy] ~ts~n~p~n", [Query, Params]),
-    Res = epgsql:equery(C, Query, Params),
+    Res = epgsql:equery(C, DB, Query, Params),
     {C, unwrap_query_result(Res)}.
 
 -spec tx(atom(), fun((epgsql:connection()) -> any())) -> {error, any()} | {ok, any()}.

@@ -7,6 +7,7 @@
 %% API functions
 %% ====================================================================
 -export([
+		 test/0,
     get_distance/1,
     start/0,
     get_the_selected_number_of_values/1,
@@ -37,7 +38,7 @@ get_distance(Id) ->
             {ok, Res};
         {error, notfound} ->
             {error, notfound};
-        {error, Reason} ->
+        {error, _Reason} ->
 %%            ?ERROR("Failed to find limit for this account ~p with reason: ~tp", [Id, Reason]),
             {error, internal}
     end.
@@ -50,6 +51,8 @@ forming_correct_response(Res) ->
     jsx:encode(#{<<"distance">> => Result}).
 
 
+test() -> 
+	<<"HELLO">>.
 -spec get_the_selected_number_of_values(Quantity :: integer()) -> {ok, [Res::float()]} | {error, Reason} when
     Reason :: invalid_account_id | internal | notfound.
 get_the_selected_number_of_values(Quantity) ->
@@ -59,7 +62,7 @@ get_the_selected_number_of_values(Quantity) ->
             {ok, FinRes};
         {error, notfound} ->
             {error, notfound};
-        {error, Reason} ->
+        {error, _Reason} ->
 %%            ?ERROR("Failed to find limit for this account ~p with reason: ~tp", [Quantity, Reason]),
             {error, internal}
     end.
@@ -68,11 +71,11 @@ get_the_selected_number_of_values(Quantity) ->
     Reason :: invalid_account_id | internal | notfound.
 get_distance_in_date_range(#{<<"start_date">> := StartDate, <<"end_date">> := EndDate} = Period) ->
     case db_get_distance_in_date_range(StartDate, EndDate) of
+		 {error, notfound} ->
+            {error, notfound};
         {ok, Res} ->
             {ok, Res};
-        {error, notfound} ->
-            {error, notfound};
-        {error, Reason} ->
+        {error, _Reason} ->
 %%            ?ERROR("Failed to find limit for this account ~p with reason: ~tp", [ Reason]),
             {error, internal}
     end.
@@ -103,10 +106,10 @@ db_get_the_selected_number_of_values(Quantity) ->
                          ORDER BY id DESC
                          LIMIT  $1::int8",
         [Quantity]) of
+		  {ok, _, [ ]} ->
+            {error, notfound};
         {ok,_, Res } ->
             {ok, Res};
-        {ok, _, [ ]} ->
-            {error, notfound};
         {error, _Reason} = Res ->
             Res;
         Reason ->
@@ -120,10 +123,11 @@ db_get_distance_in_date_range(StartDate, EndDate) ->
                          WHERE  timestamp > $1:: AND  timestamp < $2::datetime
                          LIMIT  20",
         [StartDate, EndDate]) of
-        {ok,_, Res } ->
-            {ok, Res};
-        {ok, _, [ ]} ->
+               {ok, _, [ ]} ->
             {error, notfound};
+		{ok,_, Res } ->
+            {ok, Res};
+
         {error, _Reason} = Res ->
             Res;
         Reason ->

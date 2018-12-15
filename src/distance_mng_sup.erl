@@ -41,7 +41,7 @@ init([]) ->
                 id => my_web,
                 start => {cowboy, start_clear, [
                     http,
-                    [{port, 8080}],
+                    #{port => 8080},
                     #{
                         env => #{dispatch => Dispatch},
                         middlewares => [cowboy_router, cowboy_handler]
