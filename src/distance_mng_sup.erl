@@ -35,22 +35,28 @@ init([]) ->
             {"/", toppage_h, []}
         ]}
     ]),
+
+
     {ok, {
-        {one_for_one, 15, 1}, 
+        {one_for_one, 15, 1}, [
             #{
-                id => my_web,
+                id => distance_mng_web,
                 start => {cowboy, start_clear, [
                     http,
-                    #{port => 8080},
+                    [{port, 8080}],
                     #{
                         env => #{dispatch => Dispatch},
                         middlewares => [cowboy_router, cowboy_handler]
                     }
                 ]}
+            },
+
+            #{
+                id => distance_mng_srv,
+                start => {distance_mng_srv, start_link, []}
             }
-   
-	}
-}.
+        ]
+    }}.
 %%====================================================================
 %% Internal functions
 %%====================================================================

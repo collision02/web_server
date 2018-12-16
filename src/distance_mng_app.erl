@@ -13,6 +13,7 @@
 %% API.
 
 start(_Type, _Args) ->
+    logger:info("Distance MNG starting!"),
     distance_mng_sup:start_link().
 
 stop(_State) ->
